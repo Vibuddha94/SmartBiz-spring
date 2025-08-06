@@ -9,7 +9,8 @@ import java.util.List;
 public interface UserService {
     UserDto saveUser(UserDto userDto) throws Exception;
     UserDto getUserById(Integer id);
-    UserDto updateUser(UserDto userDto);
+    UserDto updateUser(Integer id, UserDto userDto);
+    UserDto updatePassword(Integer id, String password);
     Boolean deleteUser(Integer id);
     List<UserDto> getAll();
 }
