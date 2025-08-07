@@ -1,5 +1,6 @@
 package lk.acpt.user.controller;
 
+import lk.acpt.user.dto.PasswordDto;
 import lk.acpt.user.dto.ResponseDto;
 import lk.acpt.user.dto.UserDto;
 import lk.acpt.user.service.UserService;
@@ -53,10 +54,10 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDto("User updated successfully", updatedUser));
     }
 
-    @PutMapping("/password/{id}/{password}")
-    public ResponseEntity<ResponseDto> updatePassword(@PathVariable Integer id, @PathVariable String password) {
+    @PutMapping("/password/{id}")
+    public ResponseEntity<ResponseDto> updatePassword(@PathVariable Integer id, @RequestBody PasswordDto password) {
         try {
-            UserDto updatedUser = userService.updatePassword(id, password);
+            UserDto updatedUser = userService.updatePassword(id, password.getPassword());
             if (updatedUser == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDto("User not found or password unchanged", null));
             }
