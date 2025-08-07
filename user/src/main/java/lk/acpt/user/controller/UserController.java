@@ -53,8 +53,8 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDto("User updated successfully", updatedUser));
     }
 
-    @PutMapping("/password/{id}")
-    public ResponseEntity<ResponseDto> updatePassword(@PathVariable Integer id, @RequestBody String password) {
+    @PutMapping("/password/{id}/{password}")
+    public ResponseEntity<ResponseDto> updatePassword(@PathVariable Integer id, @PathVariable String password) {
         try {
             UserDto updatedUser = userService.updatePassword(id, password);
             if (updatedUser == null) {
@@ -80,6 +80,9 @@ public class UserController {
     public ResponseEntity<List<UserDto>> getAllUsers(@RequestHeader("Authorization") String authorization) {
         if (!jwtUtil.validateJwtToken(authorization)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        if (!jwtUtil.getRoleFromToken(authorization).equals("ROLE_ADMIN")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return ResponseEntity.status(HttpStatus.OK).body(userService.getAll());
     }

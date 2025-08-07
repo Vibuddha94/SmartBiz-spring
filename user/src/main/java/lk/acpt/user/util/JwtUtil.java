@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 
+import javax.crypto.SecretKey;
 import java.security.Key;
 import java.util.Date;
 
@@ -23,24 +24,33 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public String generateToken(String email) {
+    public String generateToken(String email,String role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiration);
         return Jwts.builder()
                 .subject(email)
+                .issuer(role)
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(getSigningKey())
                 .compact();
     }
 
-    public String getEmailFromToken(String token) {
-        Claims claims = Jwts.parser()
-                .verifyWith(Keys.hmacShaKeyFor(secret.getBytes()))
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-        return claims.getSubject();
+    public String getRoleFromToken(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return null;
+        }
+        String token = authHeader.substring(7); // Remove 'Bearer ' prefix
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith((SecretKey) getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            return claims.getIssuer();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public boolean validateJwtToken(String authToken) {
@@ -50,7 +60,7 @@ public class JwtUtil {
         String jwtToken = authToken.substring("Bearer ".length());
         try {
             Jwts.parser()
-                .verifyWith(Keys.hmacShaKeyFor(secret.getBytes()))
+                .verifyWith((SecretKey) getSigningKey())
                 .build()
                 .parseSignedClaims(jwtToken);
             return true;
