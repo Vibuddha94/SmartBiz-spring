@@ -4,6 +4,7 @@ import lk.acpt.user.dto.ResponseDto;
 import lk.acpt.user.dto.UserDto;
 import lk.acpt.user.service.UserService;
 import lk.acpt.user.exception.ExistingPasswordException;
+import lk.acpt.user.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +17,12 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    public UserController(UserService userService ) {
+    public UserController(UserService userService, JwtUtil jwtUtil) {
         this.userService = userService;
+        this.jwtUtil = jwtUtil;
     }
 
     @PostMapping
@@ -74,7 +77,10 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UserDto>> getAllUsers() {
+    public ResponseEntity<List<UserDto>> getAllUsers(@RequestHeader("Authorization") String authorization) {
+        if (!jwtUtil.validateJwtToken(authorization)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         return ResponseEntity.status(HttpStatus.OK).body(userService.getAll());
     }
 }
